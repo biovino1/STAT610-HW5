@@ -12,8 +12,7 @@ make_weight_matrix = function(z, x, omega) {
   
   values <- (abs(x-z)/omega)
   transformed_vals <- ifelse((abs(values)<1), 1-(abs(values)^3)^3, 0)
-  Wz = diag(transformed_vals)
-  return(Wz)
+  return(transformed_vals)
 }
 
 make_predictor_matrix = function(x) {
@@ -25,17 +24,25 @@ make_predictor_matrix = function(x) {
   return(X)
 }
 
+mat_mult_vec <- function(matrix, vector) {
+  #' Returns the multiplication of a matrix by a vector
+
+  result <- apply(matrix, 2, function(col) col * vector)
+  return(result)
+}
+
 compute_f_hat = function(z, x, y, omega) {
   Wz = make_weight_matrix(z, x, omega)
   X = make_predictor_matrix(x)
-  f_hat = c(1, z) %*% solve(t(X) %*% Wz %*% X) %*% t(X) %*% Wz %*% y
+  f_hat = c(1, z) %*% solve(t(X) %*% sweep(X, 2, Wz, "*")) %*% t(X) %*% (Wz * y)
   return(f_hat)
 }
 
 ## a very simple regression model
-#n = 15
-#x = rnorm(n)
-#y = rnorm(x + rnorm(n))
-#z = seq(-1, 1, length.out = 100)
-#llr(x, y, z, 1)
+n = 15
+x = rnorm(n)
+y = rnorm(x + rnorm(n))
+z = seq(-1, 1, length.out = 100)
+llr(x, y, z, 1)
+
 
